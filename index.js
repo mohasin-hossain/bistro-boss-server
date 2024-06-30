@@ -1,10 +1,18 @@
 const express = require("express");
+const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const formData = require("form-data");
+const Mailgun = require("mailgun.js");
+const mailgun = new Mailgun(formData);
 
-const app = express();
+const mg = mailgun.client({
+  username: "api",
+  key: process.env.MAILGUN_API_KEY,
+});
+
 const port = process.env.PORT || 3000;
 
 // Middleware
@@ -238,6 +246,25 @@ async function run() {
         },
       };
       const deleteResult = await cartCollection.deleteMany(query);
+
+      // Send user email about payment confirmation
+      mg.messages
+        .create(process.env.MAIL_SENDING_DOMAIN, {
+          from: "Excited User <mailgun@sandbox-123.mailgun.org>",
+          to: ["mohasinhossainrajib2@gmail.com"],
+          subject: "Confirmation Of your Order - Bistro Boss",
+          text: "Testing some Mailgun awesomness!",
+          html: `
+          <div>
+          <h2>Thank you for your Order</h2>
+          <h4>Your Transaction ID is - <strong>${payment.transactionId}</strong></h4>
+          <p>We would love to get your feedback about the food!</p>
+          </div>
+          `,
+        })
+        .then((msg) => console.log(msg)) // logs response data
+        .catch((err) => console.error(err)); // logs any error
+
       res.send({ paymentResult, deleteResult });
     });
 
@@ -270,43 +297,43 @@ async function run() {
     });
 
     app.get("/order-stats", verifyToken, verifyAdmin, async (req, res) => {
-        const result = await paymentCollection.aggregate([
-            {
-                $unwind: '$menuItemIds',
-            }, 
-            {
-                $lookup: {
-                    from: 'menu',
-                    let: { menuItemId: { $toObjectId: "$menuItemIds" } },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ["$_id", "$$menuItemId"] } } }
-                    ],
-                    as: 'menuItems'
-                }
-            }, 
-            {
-                $unwind: '$menuItems'
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $unwind: "$menuItemIds",
+          },
+          {
+            $lookup: {
+              from: "menu",
+              let: { menuItemId: { $toObjectId: "$menuItemIds" } },
+              pipeline: [
+                { $match: { $expr: { $eq: ["$_id", "$$menuItemId"] } } },
+              ],
+              as: "menuItems",
             },
-            {
-                $group: {
-                    _id: '$menuItems.category',
-                    quantity: {$sum: 1},
-                    revenue: {$sum: '$menuItems.price'}
-                }
+          },
+          {
+            $unwind: "$menuItems",
+          },
+          {
+            $group: {
+              _id: "$menuItems.category",
+              quantity: { $sum: 1 },
+              revenue: { $sum: "$menuItems.price" },
             },
-            {
-                $project: {
-                    _id: 0,
-                    category: "$_id",
-                    quantity: 1,
-                    revenue: 1
-                }
-            }
-
-    
-        ]).toArray();
-        res.send(result);
-    })
+          },
+          {
+            $project: {
+              _id: 0,
+              category: "$_id",
+              quantity: 1,
+              revenue: 1,
+            },
+          },
+        ])
+        .toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
