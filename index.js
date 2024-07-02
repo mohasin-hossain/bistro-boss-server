@@ -143,6 +143,21 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/menu-names", async (req, res) => {
+      const result = await menuCollection
+        .find(
+          {},
+          {
+            projection: {
+              _id: 0,
+              name: 1,
+            },
+          }
+        )
+        .toArray();
+      res.send(result);
+    });
+
     app.get("/menu/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -343,7 +358,9 @@ async function run() {
 
     app.get("/user-stats/:email", async (req, res) => {
       const query = { email: req.params.email };
+      const userQuery = { user: req.params.email };
       const orders = await paymentCollection.countDocuments(query);
+      const reviews = await reviewCollection.countDocuments(userQuery);
 
       // const totalPaymentsResult = await paymentCollection.aggregate([
       //     { $match: { query } },
@@ -351,7 +368,7 @@ async function run() {
       // ]).toArray();
       // const totalPayments = totalPaymentsResult.length > 0 ? totalPaymentsResult[0].totalPayments : 0;
 
-      res.send({ orders });
+      res.send({ orders, reviews });
     });
 
     // Send a ping to confirm a successful connection
