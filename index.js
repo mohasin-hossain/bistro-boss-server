@@ -335,6 +335,20 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/user-stats/:email', async(req, res) => {
+        const query = {email: req.params.email}
+        const orders = await paymentCollection.countDocuments(query);
+
+        // const totalPaymentsResult = await paymentCollection.aggregate([
+        //     { $match: { query } },
+        //     { $group: { _id: null, totalPayments: { $sum: "$price"  } } }
+        // ]).toArray();
+        // const totalPayments = totalPaymentsResult.length > 0 ? totalPaymentsResult[0].totalPayments : 0;
+
+
+        res.send({orders})
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
