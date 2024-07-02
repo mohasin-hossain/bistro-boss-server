@@ -40,6 +40,7 @@ async function run() {
     const menuCollection = client.db("bistroDB").collection("menu");
     const reviewCollection = client.db("bistroDB").collection("reviews");
     const cartCollection = client.db("bistroDB").collection("carts");
+    const bookingCollection = client.db("bistroDB").collection("bookings");
     const paymentCollection = client.db("bistroDB").collection("payments");
 
     // JWT related API
@@ -207,6 +208,19 @@ async function run() {
       const result = await reviewCollection.insertOne(review);
       res.send(result);
     });
+
+    // Bookings related API
+    app.get("/bookings", async (req, res) => {
+        const result = await bookingCollection.find().toArray();
+        res.send(result);
+    })
+
+    app.post("/bookings", verifyToken, async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    });
+
 
     // Cart Related API
     app.get("/carts", async (req, res) => {
