@@ -266,13 +266,31 @@ async function run() {
       res.send(result);
     });
 
-    // Payment Intent
+    // Payment Intent and payment related API
+    app.get("/payments", async (req, res) => {
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
+    });
+
     app.get("/payments/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       if (req.params.email !== req.decoded.email) {
         return res.status(403).send({ message: "Forbidden Access" });
       }
       const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.patch("/payments/:id", async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.status;
+      const filter = { _id: new ObjectId(id) };
+      const updatedPayment = {
+        $set: {
+          status: status,
+        },
+      };
+      const result = await paymentCollection.updateOne(filter, updatedPayment);
       res.send(result);
     });
 
