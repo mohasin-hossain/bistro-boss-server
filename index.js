@@ -211,16 +211,39 @@ async function run() {
 
     // Bookings related API
     app.get("/bookings", async (req, res) => {
-        const result = await bookingCollection.find().toArray();
-        res.send(result);
-    })
+      const result = await bookingCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.status;
+
+      const newStatus =
+        status === "confirm" ? "confirmed" : "Sorry, Out of space!";
+
+      const filter = { _id: new ObjectId(id) };
+      const updateBooking = {
+        $set: {
+          status: newStatus,
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updateBooking);
+      res.send(result);
+    });
+
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
 
     app.post("/bookings", verifyToken, async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
-
 
     // Cart Related API
     app.get("/carts", async (req, res) => {
@@ -375,6 +398,7 @@ async function run() {
       const userQuery = { user: req.params.email };
       const orders = await paymentCollection.countDocuments(query);
       const reviews = await reviewCollection.countDocuments(userQuery);
+      const bookings = await bookingCollection.countDocuments(query);
 
       // const totalPaymentsResult = await paymentCollection.aggregate([
       //     { $match: { query } },
@@ -382,7 +406,7 @@ async function run() {
       // ]).toArray();
       // const totalPayments = totalPaymentsResult.length > 0 ? totalPaymentsResult[0].totalPayments : 0;
 
-      res.send({ orders, reviews });
+      res.send({ orders, reviews, bookings });
     });
 
     // Send a ping to confirm a successful connection
