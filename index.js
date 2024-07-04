@@ -203,6 +203,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/reviews/:name", async (req, res) => {
+        const name = req.params.name;
+        const query = {menuName: name};
+        const result = await reviewCollection.find(query).toArray();
+        res.send(result);
+    })
+
     app.post("/reviews", async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
