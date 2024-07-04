@@ -54,7 +54,7 @@ async function run() {
 
     // Middlewares
     const verifyToken = (req, res, next) => {
-      console.log("Inside verifyToken:", req.headers.authorization);
+      //   console.log("Inside verifyToken:", req.headers.authorization);
 
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "Unauthorized Access!" });
@@ -210,8 +210,18 @@ async function run() {
     });
 
     // Bookings related API
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", verifyToken, verifyAdmin, async (req, res) => {
       const result = await bookingCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/bookings/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      const query = { email: email };
+      const result = await bookingCollection.find(query).toArray();
       res.send(result);
     });
 
