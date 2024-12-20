@@ -448,11 +448,23 @@ async function run() {
     });
 
     // Message related api
+    app.get("/messages", async (req, res) => {
+      const result = await messageCollection.find().toArray();
+      res.send(result);
+    })
+
     app.post("/messages", async (req, res) => {
       const message = req.body;
       const result = await messageCollection.insertOne(message);
       res.send(result);
     })
+
+    app.delete("/messages/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await messageCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
