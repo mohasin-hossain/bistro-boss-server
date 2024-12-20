@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
 const mailgun = new Mailgun(formData);
@@ -42,6 +43,7 @@ async function run() {
     const cartCollection = client.db("bistroDB").collection("carts");
     const bookingCollection = client.db("bistroDB").collection("bookings");
     const paymentCollection = client.db("bistroDB").collection("payments");
+    const messageCollection = client.db("bistroDB").collection("messages");
 
     // JWT related API
     app.post("/jwt", async (req, res) => {
@@ -353,7 +355,7 @@ async function run() {
           from: "Excited User <mailgun@sandbox-123.mailgun.org>",
           to: ["mohasinhossainrajib2@gmail.com"],
           subject: "Confirmation Of your Order - Bistro Boss",
-          text: "Testing some Mailgun awesomness!",
+          text: "Testing",
           html: `
           <div>
           <h2>Thank you for your Order</h2>
@@ -442,14 +444,15 @@ async function run() {
       const reviews = await reviewCollection.countDocuments(userQuery);
       const bookings = await bookingCollection.countDocuments(query);
 
-      // const totalPaymentsResult = await paymentCollection.aggregate([
-      //     { $match: { query } },
-      //     { $group: { _id: null, totalPayments: { $sum: "$price"  } } }
-      // ]).toArray();
-      // const totalPayments = totalPaymentsResult.length > 0 ? totalPaymentsResult[0].totalPayments : 0;
-
       res.send({ orders, reviews, bookings });
     });
+
+    // Message related api
+    app.post("/messages", async (req, res) => {
+      const message = req.body;
+      const result = await messageCollection.insertOne(message);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
