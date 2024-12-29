@@ -8,9 +8,15 @@
     ],
     "routes": [
         {
-            "src": "/(.*)",
-            "dest": "/",
-            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+            "src": "/.*",
+            "dest": "/index.js"
         }
-    ]
+    ],
+    "functions": {
+        "index.js": {
+            "memory": 1024,
+            "maxDuration": 30
+        }
+    },
+    "regions": ["fra1", "cdg1"]
 }
