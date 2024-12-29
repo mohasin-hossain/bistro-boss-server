@@ -20,76 +20,30 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x53s3dr.mongodb.net/?appName=Cluster0`;
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x53s3dr.mongodb.net/?appName=Cluster0`;
 
-// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-// const client = new MongoClient(uri, {
-//   serverApi: {
-//     version: ServerApiVersion.v1,
-//     strict: true,
-//     deprecationErrors: true,
-//   },
-// });
-
-//////////////////////////////////
-// Cached variables for MongoDB connection
-let cachedClient = null;
-let cachedDb = null;
-
-// Function to connect to MongoDB
-async function connectToDatabase() {
-  if (cachedClient && cachedDb) {
-    console.log("Using cached MongoDB connection");
-    return { client: cachedClient, db: cachedDb };
-  }
-
-  console.log("Creating new MongoDB connection");
-  const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x53s3dr.mongodb.net/?appName=Cluster0`;
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-
-  await client.connect();
-  const db = client.db("bistroDB");
-  cachedClient = client;
-  cachedDb = db;
-
-  return { client, db };
-}
-//////////////////////////////
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
-    // const userCollection = client.db("bistroDB").collection("users");
-    // const menuCollection = client.db("bistroDB").collection("menu");
-    // const reviewCollection = client.db("bistroDB").collection("reviews");
-    // const cartCollection = client.db("bistroDB").collection("carts");
-    // const bookingCollection = client.db("bistroDB").collection("bookings");
-    // const paymentCollection = client.db("bistroDB").collection("payments");
-    // const messageCollection = client.db("bistroDB").collection("messages");
-
-
-
-    const { db } = await connectToDatabase();
-
-    // Collections
-    const userCollection = db.collection("users");
-    const menuCollection = db.collection("menu");
-    const reviewCollection = db.collection("reviews");
-    const cartCollection = db.collection("carts");
-    const bookingCollection = db.collection("bookings");
-    const paymentCollection = db.collection("payments");
-    const messageCollection = db.collection("messages");
-
-
+    const userCollection = client.db("bistroDB").collection("users");
+    const menuCollection = client.db("bistroDB").collection("menu");
+    const reviewCollection = client.db("bistroDB").collection("reviews");
+    const cartCollection = client.db("bistroDB").collection("carts");
+    const bookingCollection = client.db("bistroDB").collection("bookings");
+    const paymentCollection = client.db("bistroDB").collection("payments");
+    const messageCollection = client.db("bistroDB").collection("messages");
 
     // JWT related API
     app.post("/jwt", async (req, res) => {
