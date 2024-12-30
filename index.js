@@ -6,13 +6,13 @@ const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const formData = require("form-data");
-const Mailgun = require("mailgun.js");
-const mailgun = new Mailgun(formData);
+// const Mailgun = require("mailgun.js");
+// const mailgun = new Mailgun(formData);
 
-const mg = mailgun.client({
-  username: "api",
-  key: process.env.MAILGUN_API_KEY,
-});
+// const mg = mailgun.client({
+//   username: "api",
+//   key: process.env.MAILGUN_API_KEY,
+// });
 
 const port = process.env.PORT || 3000;
 
@@ -350,22 +350,22 @@ async function run() {
       const deleteResult = await cartCollection.deleteMany(query);
 
       // Send user email about payment confirmation
-      mg.messages
-        .create(process.env.MAIL_SENDING_DOMAIN, {
-          from: "Excited User <mailgun@sandbox-123.mailgun.org>",
-          to: ["mohasinhossainrajib2@gmail.com"],
-          subject: "Confirmation Of your Order - Bistro Boss",
-          text: "Testing",
-          html: `
-          <div>
-          <h2>Thank you for your Order</h2>
-          <h4>Your Transaction ID is - <strong>${payment.transactionId}</strong></h4>
-          <p>We would love to get your feedback about the food!</p>
-          </div>
-          `,
-        })
-        .then((msg) => console.log(msg)) // logs response data
-        .catch((err) => console.error(err)); // logs any error
+      // mg.messages
+      //   .create(process.env.MAIL_SENDING_DOMAIN, {
+      //     from: "Excited User <mailgun@sandbox-123.mailgun.org>",
+      //     to: ["mohasinhossainrajib2@gmail.com"],
+      //     subject: "Confirmation Of your Order - Bistro Boss",
+      //     text: "Testing",
+      //     html: `
+      //     <div>
+      //     <h2>Thank you for your Order</h2>
+      //     <h4>Your Transaction ID is - <strong>${payment.transactionId}</strong></h4>
+      //     <p>We would love to get your feedback about the food!</p>
+      //     </div>
+      //     `,
+      //   })
+      //   .then((msg) => console.log(msg)) // logs response data
+      //   .catch((err) => console.error(err)); // logs any error
 
       res.send({ paymentResult, deleteResult });
     });
